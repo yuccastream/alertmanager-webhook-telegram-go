@@ -43,10 +43,6 @@ func main() {
 	flag.StringVar(&addressListen, "l", ":8080", "Listen adderss")
 	flag.Parse()
 
-	if BotToken == "" || ChatID == 0 {
-		log.Fatal("Empty env BOT_TOKEN or CHAT_ID")
-	}
-
 	router := mux.NewRouter()
 	router.HandleFunc("/alert", ToTelegram).Methods("POST")
 
