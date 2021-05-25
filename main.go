@@ -105,17 +105,12 @@ func ToTelegram(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&alerts)
 
 	for _, alert := range alerts.Alerts {
-		var (
-			status string
-			mtime  string
-		)
+		var status string
 		switch alert.Status {
 		case "firing":
 			status = "🔥 **" + alert.Labels.Alertname + "**"
-			mtime = alert.EndsAt.Format(timeDateFormat)
 		case "resolved":
 			status = "✅ **" + alert.Labels.Alertname + "**"
-			mtime = alert.StartsAt.Format(timeDateFormat)
 		}
 		telegramMsg := status + "\n"
 
