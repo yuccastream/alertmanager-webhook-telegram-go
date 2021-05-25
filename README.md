@@ -10,11 +10,11 @@ Go version 1.16.4
 ## Alertmanager configuration example
 
 ```yaml
-	receivers:
-	- name: 'telegram-webhook'
-	  webhook_configs:
-	  - url: http://ipGoAlert:8080/alert
-	    send_resolved: true
+receivers:
+- name: 'telegram-webhook'
+  webhook_configs:
+  - url: http://ipGoAlert:8080/alert
+    send_resolved: true
 ```
 
 ## Running on docker
