@@ -4,7 +4,7 @@ COPY . .
 
 ENV GO111MODULE="off"
 RUN set -xe \
-    && go build -o awt-go main.go
+    && go build -o awt main.go
 
 FROM debian:10-slim
 LABEL maintainer="Yucca Stream https://yucca.app"
