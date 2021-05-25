@@ -22,7 +22,7 @@ receivers:
 ```bash
 git clone https://github.com/yuccastream/alertmanager-webhook-telegram-go.git
 cd ./alertmanager-webhook-telegram-go
-docker build -t awt-go .
+make docker
 
 docker run -d --name awt -e "BOT_TOKEN=telegramBot:Token" -e "CHAT_ID=32" -p 8080:8080 yuccastream/awt-go:latest
 ```
