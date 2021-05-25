@@ -108,9 +108,9 @@ func ToTelegram(w http.ResponseWriter, r *http.Request) {
 		var status string
 		switch alert.Status {
 		case "firing":
-			status = "🔥 **" + alert.Labels.Alertname + "**"
+			status = "🔥 " + alert.Labels.Alertname
 		case "resolved":
-			status = "✅ **" + alert.Labels.Alertname + "**"
+			status = "✅ " + alert.Labels.Alertname
 		}
 		telegramMsg := status + "\n"
 
