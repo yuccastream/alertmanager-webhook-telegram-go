@@ -1,17 +1,134 @@
 package main
 
 import (
-	"alertmanager-webhook-telegram-go/alert"
+	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 
+	botapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/gorilla/mux"
+)
+
+var (
+	BotToken      string
+	ChatID        int64
+	addressListen string
+)
+
+const (
+	timeDateFormat = "2006-01-02 15:04:05"
 )
 
 func main() {
 
-	router := mux.NewRouter()
-	router.HandleFunc("/alert", alert.ToTelegram).Methods("POST")
+	s := os.Getenv("CHAT_ID")
+	if s == "" {
+		log.Fatal("Empty env CHAT_ID")
+	}
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	log.Fatal(http.ListenAndServe("0.0.0.0:9229", router))
+	ChatID = n
+	BotToken = os.Getenv("BOT_TOKEN")
+	if BotToken == "" {
+		log.Fatal("Empty env BOT_TOKEN")
+	}
+
+	flag.StringVar(&addressListen, "l", ":8080", "Listen adderss")
+	flag.Parse()
+
+	if BotToken == "" || ChatID == 0 {
+		log.Fatal("Empty env BOT_TOKEN or CHAT_ID")
+	}
+
+	router := mux.NewRouter()
+	router.HandleFunc("/alert", ToTelegram).Methods("POST")
+
+	log.Println("Listen", addressListen)
+	log.Fatal(http.ListenAndServe(addressListen, router))
+}
+
+type alertmanagerAlert struct {
+	Receiver string `json:"receiver"`
+	Status   string `json:"status"`
+	Alerts   []struct {
+		Status string `json:"status"`
+		Labels struct {
+			Name      string `json:"name"`
+			Instance  string `json:"instance"`
+			Alertname string `json:"alertname"`
+			Service   string `json:"service"`
+			Severity  string `json:"severity"`
+		} `json:"labels"`
+		Annotations struct {
+			Info        string `json:"info"`
+			Description string `json:"description"`
+			Summary     string `json:"summary"`
+		} `json:"annotations"`
+		StartsAt     time.Time `json:"startsAt"`
+		EndsAt       time.Time `json:"endsAt"`
+		GeneratorURL string    `json:"generatorURL"`
+		Fingerprint  string    `json:"fingerprint"`
+	} `json:"alerts"`
+	GroupLabels struct {
+		Alertname string `json:"alertname"`
+	} `json:"groupLabels"`
+	CommonLabels struct {
+		Alertname string `json:"alertname"`
+		Service   string `json:"service"`
+		Severity  string `json:"severity"`
+	} `json:"commonLabels"`
+	CommonAnnotations struct {
+		Summary string `json:"summary"`
+	} `json:"commonAnnotations"`
+	ExternalURL string `json:"externalURL"`
+	Version     string `json:"version"`
+	GroupKey    string `json:"groupKey"`
+}
+
+// ToTelegram function responsible to send msg to telegram
+func ToTelegram(w http.ResponseWriter, r *http.Request) {
+
+	var alerts alertmanagerAlert
+
+	bot, err := botapi.NewBotAPI(BotToken)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	_ = json.NewDecoder(r.Body).Decode(&alerts)
+
+	for _, alert := range alerts.Alerts {
+		telegramMsg := "Status: " + alerts.Status + "\n"
+		if alert.Labels.Name != "" {
+			telegramMsg += "Instance: " + alert.Labels.Instance + "(" + alert.Labels.Name + ")\n"
+		}
+		if alert.Annotations.Info != "" {
+			telegramMsg += "Info: " + alert.Annotations.Info + "\n"
+		}
+		if alert.Annotations.Summary != "" {
+			telegramMsg += "Summary: " + alert.Annotations.Summary + "\n"
+		}
+		if alert.Annotations.Description != "" {
+			telegramMsg += "Description: " + alert.Annotations.Description + "\n"
+		}
+		if alert.Status == "resolved" {
+			telegramMsg += "Resolved: " + alert.EndsAt.Format(timeDateFormat)
+		} else if alert.Status == "firing" {
+			telegramMsg += "Started: " + alert.StartsAt.Format(timeDateFormat)
+		}
+
+		msg := botapi.NewMessage(-ChatID, telegramMsg)
+		bot.Send(msg)
+	}
+
+	log.Println(alerts)
+	json.NewEncoder(w).Encode(alerts)
+
 }
