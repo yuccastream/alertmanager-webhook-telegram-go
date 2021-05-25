@@ -24,5 +24,5 @@ git clone https://github.com/yuccastream/alertmanager-webhook-telegram-go.git
 cd ./alertmanager-webhook-telegram-go
 make docker
 
-docker run -d --name awt -e "BOT_TOKEN=telegramBot:Token" -e "CHAT_ID=32" -p 8080:8080 yuccastream/awt-go:latest
+docker run -d --name awt -e "BOT_TOKEN=telegramBot:Token" -e "CHAT_ID=32" -p 8080:8080 yuccastream/awt:latest
 ```

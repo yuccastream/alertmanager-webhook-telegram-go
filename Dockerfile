@@ -15,7 +15,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /go/src/gitlab.com/yuccastream/alertmanager-webhook-telegram-go/awt-go /usr/local/bin/awt-go
+COPY --from=builder /go/src/gitlab.com/yuccastream/alertmanager-webhook-telegram-go/awt /usr/local/bin/awt
 
 EXPOSE 8080
-ENTRYPOINT ["/usr/local/bin/awt-go"]
+ENTRYPOINT ["/usr/local/bin/awt"]

@@ -6,12 +6,12 @@ help: ## Справка по командам
 
 .PHONY: build 
 build: ## Сборка
-	GO111MODULE=off go build -o awt-go main.go
+	GO111MODULE=off go build -o awt main.go
 
 .PHONY: docker 
 docker: ## Сборка docker image
-	docker build -t yuccastream/awt-go:latest .
+	docker build -t yuccastream/awt:latest .
 
 .PHONY: push 
 push: ## Push docker image to registy
-	docker push yuccastream/awt-go:latest
+	docker push yuccastream/awt:latest
