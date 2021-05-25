@@ -105,7 +105,14 @@ func ToTelegram(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&alerts)
 
 	for _, alert := range alerts.Alerts {
-		telegramMsg := "Status: " + alerts.Status + "\n"
+		var status string
+		switch alert.Status {
+		case "firing":
+			status = "Status: 🔥 " + alert.Status
+		case "resolved":
+			status = "Status: ✅ " + alert.Status
+		}
+		telegramMsg := status + "\n"
 		if alert.Labels.Name != "" {
 			telegramMsg += "Instance: " + alert.Labels.Instance + "(" + alert.Labels.Name + ")\n"
 		}
