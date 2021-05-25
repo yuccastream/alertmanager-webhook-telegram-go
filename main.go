@@ -105,35 +105,28 @@ func ToTelegram(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&alerts)
 
 	for _, alert := range alerts.Alerts {
-		var status string
+		var (
+			status string
+			mtime  string
+		)
 		switch alert.Status {
 		case "firing":
-			status = "🔥 <b>" + alert.Labels.Alertname + "</b>"
+			status = "🔥 **" + alert.Labels.Alertname + "**"
+			mtime = alert.EndsAt.Format(timeDateFormat)
 		case "resolved":
-			status = "✅ <b>" + alert.Labels.Alertname + "</b>"
+			status = "✅ **" + alert.Labels.Alertname + "**"
+			mtime = alert.StartsAt.Format(timeDateFormat)
 		}
 		telegramMsg := status + "\n"
 
-		if alert.Labels.Name != "" {
-			telegramMsg += "Instance: " + alert.Labels.Instance + "(" + alert.Labels.Name + ")\n"
-		}
-		if alert.Annotations.Info != "" {
-			telegramMsg += "Info: " + alert.Annotations.Info + "\n"
-		}
-		if alert.Annotations.Summary != "" {
-			telegramMsg += "Summary: " + alert.Annotations.Summary + "\n"
-		}
 		if alert.Annotations.Description != "" {
 			telegramMsg += "Description: " + alert.Annotations.Description + "\n"
 		}
-		if alert.Status == "resolved" {
-			telegramMsg += "Resolved: " + alert.EndsAt.Format(timeDateFormat)
-		} else if alert.Status == "firing" {
-			telegramMsg += "Started: " + alert.StartsAt.Format(timeDateFormat)
-		}
+		telegramMsg += mtime + "\n"
 
 		msg := botapi.NewMessage(-ChatID, telegramMsg)
 		bot.Send(msg)
+
 	}
 
 	log.Println(alerts)
