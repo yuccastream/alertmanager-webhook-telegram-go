@@ -115,7 +115,7 @@ func ToTelegram(w http.ResponseWriter, r *http.Request) {
 		telegramMsg := status + "\n"
 
 		if alert.Annotations.Description != "" {
-			telegramMsg += "Description: " + alert.Annotations.Description + "\n"
+			telegramMsg += alert.Annotations.Description + "\n"
 		}
 
 		msg := botapi.NewMessage(-ChatID, telegramMsg)
